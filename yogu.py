@@ -41,6 +41,9 @@ def run_operation(expr):
                 return f"[Erro na operação: {e}]"
     return parse_value(expr)
 
+class YoguEnd(Exception):
+    pass
+
 def run_line(line, line_num):
     line = line.strip()
 
@@ -53,7 +56,6 @@ def run_line(line, line_num):
         content = line[3:].strip()
         if content.startswith('/') and content.endswith('\\'):
             inner = content[1:-1].strip()
-            # Pode ser variável ou string
             if inner.startswith('"') and inner.endswith('"'):
                 print(inner[1:-1])
             elif inner in variables:
@@ -85,8 +87,15 @@ def run_line(line, line_num):
                 var_name, expr = inner.split('=', 1)
                 var_name = var_name.strip()
                 expr = expr.strip()
+                # Substituir Very e False
+                if expr == 'Very':
+                    expr_val = True
+                elif expr == 'False':
+                    expr_val = False
+                else:
+                    expr_val = run_operation(expr)
                 if var_name in variables:
-                    variables[var_name] = run_operation(expr)
+                    variables[var_name] = expr_val
                 else:
                     yogu_error(f"Variável '{var_name}' não declarada. Use Ph primeiro.", line_num)
             else:
@@ -98,29 +107,105 @@ def run_line(line, line_num):
     elif line == 'CLR':
         os.system('clear')
 
+    # End — termina execução do arquivo
+    elif line.lower() == 'end':
+        raise YoguEnd()
+
     else:
         yogu_error(f"Comando desconhecido: '{line}'", line_num)
 
 def run_file(filepath):
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-        for i, line in enumerate(lines, 1):
-            run_line(line, i)
+            lines = [l.rstrip('\n') for l in f.readlines()]
+
+        i = 0
+        try:
+            while i < len(lines):
+                line = lines[i].strip()
+
+                # If 'var' — condicional
+                if line.startswith('If'):
+                    content = line[2:].strip()
+                    if content.startswith("'") and content.endswith("'"):
+                        var_name = content[1:-1].strip()
+                        condition = variables.get(var_name, False)
+                        i += 1
+                        block = []
+                        while i < len(lines) and lines[i].strip().lower() != 'end':
+                            block.append(lines[i])
+                            i += 1
+                        # Pular o End do bloco If (não é End de arquivo)
+                        i += 1
+                        if condition is True:
+                            for j, bline in enumerate(block, 1):
+                                run_line(bline, j)
+                    else:
+                        yogu_error("Sintaxe If incorreta. Use: If 'variavel'", i + 1)
+                        i += 1
+                else:
+                    run_line(line, i + 1)
+                    i += 1
+
+        except YoguEnd:
+            pass
+
     except FileNotFoundError:
         print(f"[Yogu] Arquivo '{filepath}' não encontrado.")
 
+def print_welcome():
+    print("©Yogu 2026")
+    print("Bem-Vindo(a) ao Yogu.")
+    print("Digite 'Go' para executar, 'sair' para sair.\n")
+
 def run_repl():
-    print("Yogu 0.1 — digite 'sair' para sair\n")
-    line_num = 1
+    print_welcome()
+    buffer = []
     while True:
         try:
             line = input("yogu> ")
-            if line.strip().lower() == 'sair':
+            cleaned_line = line.strip()
+            
+            if cleaned_line.lower() == 'sair':
                 print("Saindo do Yogu.")
                 break
-            run_line(line, line_num)
-            line_num += 1
+            elif cleaned_line == 'CLR':
+                os.system('clear')
+                print_welcome()
+            elif cleaned_line.lower() == 'go':
+                if buffer:
+                    # Executa o buffer acumulado
+                    i = 0
+                    try:
+                        while i < len(buffer):
+                            cur = buffer[i].strip()
+                            if cur.startswith('If'):
+                                content = cur[2:].strip()
+                                if content.startswith("'") and content.endswith("'"):
+                                    var_name = content[1:-1].strip()
+                                    condition = variables.get(var_name, False)
+                                    i += 1
+                                    block = []
+                                    while i < len(buffer) and buffer[i].strip().lower() != 'end':
+                                        block.append(buffer[i])
+                                        i += 1
+                                    i += 1
+                                    if condition is True:
+                                        for j, bline in enumerate(block, 1):
+                                            run_line(bline, j)
+                                else:
+                                    yogu_error("Sintaxe If incorreta.", i + 1)
+                                    i += 1
+                            else:
+                                run_line(cur, i + 1)
+                                i += 1
+                    except YoguEnd:
+                        pass
+                    buffer = []  # Limpa o buffer após executar com sucesso
+                else:
+                    print("[Yogu] Nada para executar. Digite algumas linhas de código antes de 'Go'.")
+            else:
+                buffer.append(line)
         except KeyboardInterrupt:
             print("\nSaindo do Yogu.")
             break
