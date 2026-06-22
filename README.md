@@ -16,7 +16,7 @@ Created by [@ItsGabrieloo](https://github.com/ItsGabrieloo)
 ```
 cd /storage/emulated/0/Download/.yg
 ```
-python yogu.py
+python yogu.py.yg
 ```
 
 ---
