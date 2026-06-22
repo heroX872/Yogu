@@ -178,10 +178,12 @@ def print_tutorial():
     print("      TXT /\"A condição era Very!\"\\")
     print("  End\n")
     print("Comandos do REPL:")
-    print("  CLR  -> Limpa o terminal sem sumir com as instruções.")
-    print("  Go   -> Executa o bloco de código enviado ao buffer.")
-    print("  End  -> Finaliza a execução do bloco imediatamente.")
-    print("  sair -> Fecha o interpretador Yogu.")
+    print("  CLR   -> Limpa o terminal sem sumir com as instruções.")
+    print("  Go    -> Executa o bloco de código enviado ao buffer.")
+    print("  End   -> Finaliza a execução do bloco imediatamente.")
+    print("  help  -> Abre este tutorial de ajuda.")
+    print("  close -> Fecha o tutorial e volta para a tela inicial.")
+    print("  sair  -> Fecha o interpretador Yogu.")
     print("=====================================================\n")
 
 def run_repl():
@@ -198,6 +200,9 @@ def run_repl():
             elif cleaned_line.lower() == 'help':
                 os.system('clear')
                 print_tutorial()
+            elif cleaned_line.lower() == 'close':
+                os.system('clear')
+                print_welcome()
             elif cleaned_line == 'CLR':
                 os.system('clear')
                 print_welcome()
