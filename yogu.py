@@ -154,7 +154,7 @@ def run_file(filepath):
         print(f"[Yogu] Arquivo '{filepath}' não encontrado.")
 
 def print_welcome():
-    print("©Yogu 2026")
+    print("versão 1.0 | © Yogu 2026")
     print("Bem-Vindo(a) ao Yogu.")
     print("Digite 'Go' para executar, 'sair' para sair ou 'help' para ver o tutorial.\n")
 
