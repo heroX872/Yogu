@@ -1,4 +1,5 @@
 import sys
+import os
 
 variables = {}
 
@@ -93,6 +94,10 @@ def run_line(line, line_num):
         else:
             yogu_error("Sintaxe Ht incorreta. Use: Ht 'variavel=valor'", line_num)
 
+    # CLR — limpar terminal
+    elif line == 'CLR':
+        os.system('clear')
+
     else:
         yogu_error(f"Comando desconhecido: '{line}'", line_num)
 
@@ -121,6 +126,7 @@ def run_repl():
             break
 
 if __name__ == '__main__':
+    os.system('clear')
     if len(sys.argv) > 1:
         run_file(sys.argv[1])
     else:
