@@ -154,9 +154,9 @@ def run_file(filepath):
         print(f"[Yogu] Arquivo '{filepath}' não encontrado.")
 
 def print_welcome():
-    print("versão 1.0 | © Yogu 2026")
+    print("versão 1.2 | © Yogu 2026")
     print("Bem-Vindo(a) ao Yogu.")
-    print("Digite 'Go' para executar, 'sair' para sair ou 'help' para ver o tutorial.\n")
+    print("Digite 'Go' para executar, 'save' para salvar, 'edit' para editar, 'procurar' para buscar arquivo, 'sair' para sair ou 'help' para ver o tutorial.\n")
 
 def print_tutorial():
     print("=================== TUTORIAL YOGU ===================")
@@ -178,17 +178,35 @@ def print_tutorial():
     print("      TXT /\"A condição era Very!\"\\")
     print("  End\n")
     print("Comandos do REPL:")
-    print("  CLR   -> Limpa o terminal sem sumir com as instruções.")
-    print("  Go    -> Executa o bloco de código enviado ao buffer.")
-    print("  End   -> Finaliza a execução do bloco imediatamente.")
-    print("  help  -> Abre este tutorial de ajuda.")
-    print("  close -> Fecha o tutorial e volta para a tela inicial.")
-    print("  sair  -> Fecha o interpretador Yogu.")
+    print("  CLR      -> Limpa o terminal sem apagar o código do buffer.")
+    print("  Go       -> Executa o bloco de código enviado ao buffer.")
+    print("  End      -> Finaliza a execução do bloco imediatamente.")
+    print("  save     -> Salva o código do buffer na pasta Download.")
+    print("  edit     -> Edita/Sobrescreve um arquivo existente em Download com o buffer atual.")
+    print("  procurar -> Busca e carrega um arquivo da pasta Download para o buffer.")
+    print("  help     -> Abre este tutorial de ajuda.")
+    print("  close    -> Fecha o tutorial e volta para a tela inicial.")
+    print("  sair     -> Fecha o interpretador Yogu.")
     print("=====================================================\n")
+
+def restore_repl_state(buffer):
+    os.system('clear')
+    print_welcome()
+    for b_line in buffer:
+        print(f"yogu> {b_line}")
 
 def run_repl():
     print_welcome()
     buffer = []
+    
+    # Define o caminho direto para a pasta de Downloads padrão do Android
+    if os.path.exists("/sdcard/Download"):
+        download_dir = "/sdcard/Download"
+    elif os.path.exists("/storage/emulated/0/Download"):
+        download_dir = "/storage/emulated/0/Download"
+    else:
+        download_dir = os.path.abspath(".")
+    
     while True:
         try:
             line = input("yogu> ")
@@ -201,14 +219,86 @@ def run_repl():
                 os.system('clear')
                 print_tutorial()
             elif cleaned_line.lower() == 'close':
-                os.system('clear')
-                print_welcome()
+                restore_repl_state(buffer)
             elif cleaned_line == 'CLR':
+                restore_repl_state(buffer)
+            elif cleaned_line.lower() == 'procurar':
                 os.system('clear')
-                print_welcome()
+                print("procurar")
+                filename = input("nome do arquivo: ").strip()
+                
+                if not filename.lower().endswith('.yg'):
+                    filename += '.yg'
+                
+                filepath = os.path.join(download_dir, filename)
+                
+                try:
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        buffer = [l.rstrip('\n') for l in f.readlines()]
+                    print(f"\n[Yogu] Arquivo '{filename}' carregado com sucesso de Downloads!")
+                except FileNotFoundError:
+                    print(f"\n[Yogu Error] Arquivo '{filename}' não foi encontrado na pasta Download.")
+                except Exception as e:
+                    print(f"\n[Yogu Error] Erro ao ler arquivo: {e}")
+                
+                input("\nPressione Enter para voltar...")
+                restore_repl_state(buffer)
+                
+            elif cleaned_line.lower() == 'edit':
+                if buffer:
+                    os.system('clear')
+                    print("editar arquivo")
+                    filename = input("nome do arquivo: ").strip()
+                    
+                    if not filename.lower().endswith('.yg'):
+                        filename += '.yg'
+                        
+                    filepath = os.path.join(download_dir, filename)
+                    
+                    if os.path.exists(filepath):
+                        try:
+                            with open(filepath, 'w', encoding='utf-8') as f:
+                                f.write('\n'.join(buffer) + '\n')
+                            print(f"\n[Yogu] Arquivo '{filename}' editado e atualizado com sucesso em Download!")
+                        except Exception as e:
+                            print(f"\n[Yogu Error] Falha ao editar arquivo: {e}")
+                    else:
+                        print(f"\n[Yogu Error] O arquivo '{filename}' não existe em Download para ser editado. Use 'save' primeiro.")
+                        
+                    input("\nPressione Enter para voltar...")
+                    restore_repl_state(buffer)
+                else:
+                    print("[Yogu] Nada no buffer para salvar. Escreva ou procure um código primeiro.")
+
+            elif cleaned_line.lower() == 'save':
+                if buffer:
+                    os.system('clear')
+                    print("salvar")
+                    filename = input("nome do arquivo: ").strip()
+                    
+                    if filename.lower().endswith('.txt'):
+                        filename = filename[:-4]
+                    elif filename.lower().endswith('.zip'):
+                        filename = filename[:-4]
+                    
+                    if not filename.lower().endswith('.yg'):
+                        filename += '.yg'
+                        
+                    filepath = os.path.join(download_dir, filename)
+                        
+                    try:
+                        with open(filepath, 'w', encoding='utf-8') as f:
+                            f.write('\n'.join(buffer) + '\n')
+                        print(f"\n[Yogu] Arquivo '{filename}' salvo com sucesso em Download!")
+                    except Exception as e:
+                        print(f"\n[Yogu Error] Falha ao salvar arquivo: {e}")
+                    
+                    input("\nPressione Enter para voltar...")
+                    restore_repl_state(buffer)
+                else:
+                    print("[Yogu] Nada para salvar no buffer. Digite seu código primeiro.")
             elif cleaned_line.lower() == 'go':
                 if buffer:
-                    # Executa o buffer acumulado
                     i = 0
                     try:
                         while i < len(buffer):
@@ -235,7 +325,7 @@ def run_repl():
                                 i += 1
                     except YoguEnd:
                         pass
-                    buffer = []  # Limpa o buffer após executar com sucesso
+                    buffer = []  
                 else:
                     print("[Yogu] Nada para executar. Digite algumas linhas de código antes de 'Go'.")
             else:
