@@ -156,7 +156,33 @@ def run_file(filepath):
 def print_welcome():
     print("©Yogu 2026")
     print("Bem-Vindo(a) ao Yogu.")
-    print("Digite 'Go' para executar, 'sair' para sair.\n")
+    print("Digite 'Go' para executar, 'sair' para sair ou 'help' para ver o tutorial.\n")
+
+def print_tutorial():
+    print("=================== TUTORIAL YOGU ===================")
+    print("Comentários:")
+    print("  ## Isto é um comentário e será ignorado.\n")
+    print("Saída de Texto:")
+    print("  TXT /\"Sua mensagem aqui\"\\     -> Exibe um texto fixo na tela.")
+    print("  TXT /nome_da_variavel\\        -> Exibe o valor de uma variável.\n")
+    print("Variáveis:")
+    print("  Ph 'minha_var'                -> Declara uma nova variável.")
+    print("  Ht 'minha_var = 10'           -> Atribui um valor ou booleano (Very/False).\n")
+    print("Operações Matemáticas (Ht):")
+    print("  -  : Soma         (Ex: Ht 'x = 5 - 2')  -> x vira 7")
+    print("  :  : Subtração    (Ex: Ht 'x = 5 : 2')  -> x vira 3")
+    print("  /  : Multiplicar  (Ex: Ht 'x = 5 / 2')  -> x vira 10")
+    print("  |  : Dividir      (Ex: Ht 'x = 10 | 2') -> x vira 5\n")
+    print("Condicionais:")
+    print("  If 'minha_var'")
+    print("      TXT /\"A condição era Very!\"\\")
+    print("  End\n")
+    print("Comandos do REPL:")
+    print("  CLR  -> Limpa o terminal sem sumir com as instruções.")
+    print("  Go   -> Executa o bloco de código enviado ao buffer.")
+    print("  End  -> Finaliza a execução do bloco imediatamente.")
+    print("  sair -> Fecha o interpretador Yogu.")
+    print("=====================================================\n")
 
 def run_repl():
     print_welcome()
@@ -169,6 +195,9 @@ def run_repl():
             if cleaned_line.lower() == 'sair':
                 print("Saindo do Yogu.")
                 break
+            elif cleaned_line.lower() == 'help':
+                os.system('clear')
+                print_tutorial()
             elif cleaned_line == 'CLR':
                 os.system('clear')
                 print_welcome()
